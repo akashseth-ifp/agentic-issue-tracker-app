@@ -1,5 +1,6 @@
 .env
 .env.*
+*.db
 
 # Python
 __pycache__/
