@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { BehaviorSubject, switchMap, distinctUntilChanged, catchError, finalize, of } from 'rxjs';
+import { BehaviorSubject, Subject, merge, switchMap, distinctUntilChanged, catchError, finalize, of, map } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IssueService } from '../../../../core/services/issue.service';
@@ -36,10 +36,14 @@ export class IssueListComponent {
 
   // BehaviorSubject as the page "source of truth"
   private page$ = new BehaviorSubject<number>(1);
+  // Subject for force-refreshing the current page (e.g. after delete)
+  private refresh$ = new Subject<void>();
 
   // RxJS pipeline — distinctUntilChanged + switchMap are the rubric operators
-  issuePage$ = this.page$.pipe(
-    distinctUntilChanged(),                      // skip if same page emitted twice
+  issuePage$ = merge(
+    this.page$.pipe(distinctUntilChanged()),     // skip if same page emitted twice
+    this.refresh$.pipe(map(() => this.page$.value)), // bypass distinctUntilChanged on refresh
+  ).pipe(
     switchMap(page => {                          // cancel previous in-flight request on page change
       this.isLoading = true;
       this.error = null;
@@ -68,7 +72,7 @@ export class IssueListComponent {
     ).subscribe({
       next: () => {
         this.pendingDeleteId = null;
-        this.page$.next(this.currentPage); // re-emit same page to refresh the list
+        this.refresh$.next(); // force refresh without triggering distinctUntilChanged
       },
       error: err => this.error = err.message,
     });
