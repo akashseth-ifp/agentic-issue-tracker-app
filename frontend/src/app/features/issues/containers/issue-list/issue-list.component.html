@@ -1,0 +1,45 @@
+<div class="issue-list">
+  <div class="issue-list__header">
+    <h1 class="issue-list__title">Issues</h1>
+    <a routerLink="/issues/new" class="btn btn--primary">+ New Issue</a>
+  </div>
+
+  @if (isLoading) {
+    <app-loading-spinner />
+  }
+
+  @if (error) {
+    <app-error-message [message]="error" />
+  }
+
+  @if (issuePage$ | async; as page) {
+    @if (page && page.items.length > 0) {
+      @for (issue of page.items; track issue.id) {
+        <app-issue-card
+          [issue]="issue"
+          (editClicked)="navigateToEdit($event)"
+          (deleteClicked)="showDeleteConfirm($event)"
+        />
+      }
+
+      <app-pagination
+        [currentPage]="page.page"
+        [totalPages]="page.total_pages"
+        [total]="page.total"
+        (pageChange)="onPageChange($event)"
+      />
+    } @else if (!isLoading) {
+      <p class="issue-list__empty">
+        No issues yet. <a routerLink="/issues/new">Create one</a>.
+      </p>
+    }
+  }
+
+  @if (pendingDeleteId !== null) {
+    <app-confirm-dialog
+      message="Delete this issue? This cannot be undone."
+      (confirmed)="confirmDelete(pendingDeleteId!)"
+      (cancelled)="cancelDelete()"
+    />
+  }
+</div>
