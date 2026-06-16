@@ -1,2 +1,11 @@
 .env
 .env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# uv / venv
+.venv/
+uv.lock
