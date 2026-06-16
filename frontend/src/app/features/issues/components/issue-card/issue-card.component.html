@@ -1,0 +1,17 @@
+<div class="card">
+  <div class="card__header">
+    <span class="card__id">#{{ issue.id }}</span>
+    <app-status-badge [status]="issue.status" />
+  </div>
+  <h3 class="card__title">{{ issue.title }}</h3>
+  @if (issue.description) {
+    <p class="card__description">{{ issue.description }}</p>
+  }
+  <div class="card__footer">
+    <span class="card__date">{{ issue.created_at | date: 'mediumDate' }}</span>
+    <div class="card__actions">
+      <button class="btn btn--secondary" (click)="editClicked.emit(issue.id)">Edit</button>
+      <button class="btn btn--danger" (click)="deleteClicked.emit(issue.id)">Delete</button>
+    </div>
+  </div>
+</div>

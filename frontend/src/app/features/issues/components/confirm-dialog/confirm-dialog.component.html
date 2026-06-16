@@ -1,0 +1,9 @@
+<div class="overlay" (click)="cancelled.emit()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <p class="dialog__message">{{ message }}</p>
+    <div class="dialog__actions">
+      <button class="btn btn--secondary" (click)="cancelled.emit()">Cancel</button>
+      <button class="btn btn--danger" (click)="confirmed.emit()">Delete</button>
+    </div>
+  </div>
+</div>

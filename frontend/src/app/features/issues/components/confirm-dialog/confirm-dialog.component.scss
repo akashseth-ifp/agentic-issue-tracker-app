@@ -1,0 +1,54 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  min-width: 320px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  &__message {
+    margin: 0 0 1.25rem;
+    font-size: 0.95rem;
+    color: #1e293b;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.btn {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &--secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #e2e8f0;
+
+    &:hover { background: #e2e8f0; }
+  }
+
+  &--danger {
+    background: #dc2626;
+    color: #fff;
+
+    &:hover { background: #b91c1c; }
+  }
+}
