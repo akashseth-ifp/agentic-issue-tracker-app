@@ -16,7 +16,9 @@ class Issue(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     status: Mapped[IssueStatus] = mapped_column(
-        SAEnum(IssueStatus), default=IssueStatus.OPEN, nullable=False
+        SAEnum(IssueStatus, values_callable=lambda x: [e.value for e in x]),
+        default=IssueStatus.OPEN,
+        nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
