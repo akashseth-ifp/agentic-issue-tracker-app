@@ -2,12 +2,16 @@
   <span class="pagination__total">{{ total }} issue{{ total === 1 ? '' : 's' }}</span>
   <div class="pagination__controls">
     <button class="pagination__btn" [disabled]="!hasPrev" (click)="prev()">← Prev</button>
-    @for (page of pages; track page) {
-      <button
-        class="pagination__btn"
-        [class.pagination__btn--active]="page === currentPage"
-        (click)="goTo(page)"
-      >{{ page }}</button>
+    @for (page of visiblePages; track $index) {
+      @if (page === null) {
+        <span class="pagination__ellipsis">…</span>
+      } @else {
+        <button
+          class="pagination__btn"
+          [class.pagination__btn--active]="page === currentPage"
+          (click)="goTo(page)"
+        >{{ page }}</button>
+      }
     }
     <button class="pagination__btn" [disabled]="!hasNext" (click)="next()">Next →</button>
   </div>
