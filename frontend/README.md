@@ -1,59 +1,71 @@
-# Frontend
+# Frontend — Angular Issue Tracker
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.1.
+Angular 17+ standalone component frontend for the Issue Tracking System.
 
-## Development server
-
-To start a local development server, run:
+## Setup
 
 ```bash
+cd frontend
+pnpm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open `http://localhost:4200`. Requires the backend running on `http://localhost:8000`.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Build
 
 ```bash
-ng generate component component-name
+ng build                          # development
+ng build --configuration production  # production
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Output goes to `dist/frontend/`.
 
-```bash
-ng generate --help
+## Project Structure
+
+```
+src/app/
+├── core/
+│   ├── models/
+│   │   └── issue.model.ts        — TypeScript interfaces + IssueStatus enum
+│   ├── services/
+│   │   └── issue.service.ts      — HttpClient wrapper; all methods return Observable
+│   └── interceptors/
+│       └── error.interceptor.ts  — Global HTTP error handler (HttpInterceptorFn)
+├── features/issues/
+│   ├── containers/               — Smart components (inject services, own state)
+│   │   ├── issue-list/           — Lists issues with pagination, handles edit/delete
+│   │   └── issue-form/           — Reactive form for create and edit
+│   └── components/               — Dumb components (@Input/@Output only)
+│       ├── issue-card/           — Displays one issue card
+│       ├── status-badge/         — Colored pill badge for issue status
+│       ├── confirm-dialog/       — Reusable delete confirmation modal
+│       └── pagination/           — Page controls with prev/next/page buttons
+└── shared/components/
+    ├── loading-spinner/          — Reusable CSS spinner
+    └── error-message/            — Displays error string via @Input
 ```
 
-## Building
+## Key Patterns
 
-To build the project run:
+**Smart/Dumb components** — Containers inject services and manage state. Presentational components only receive `@Input()` and emit `@Output()`.
 
-```bash
-ng build
-```
+**RxJS pipeline** — `IssueListComponent` uses `BehaviorSubject` + `distinctUntilChanged` + `switchMap` to drive pagination. `distinctUntilChanged` prevents duplicate fetches; `switchMap` cancels in-flight requests when the page changes.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+**HTTP Interceptor** — All HTTP errors (404, 422, 500, network down) are caught globally in `error.interceptor.ts` and converted to readable messages.
 
-## Running unit tests
+**Lazy routing** — All routes use `loadComponent` so each page's JS bundle is only downloaded when navigated to.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Routes
 
-```bash
-ng test
-```
+| Path | Component | Description |
+|---|---|---|
+| `/` | — | Redirects to `/issues` |
+| `/issues` | `IssueListComponent` | Paginated issue list |
+| `/issues/new` | `IssueFormComponent` | Create a new issue |
+| `/issues/edit/:id` | `IssueFormComponent` | Edit an existing issue |
 
-## Running end-to-end tests
+## Environment Config
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+`src/environments/environment.ts` — points `apiUrl` to `http://localhost:8000/api` in development.
+`src/environments/environment.prod.ts` — use a relative `/api` path for same-origin production deploys.
