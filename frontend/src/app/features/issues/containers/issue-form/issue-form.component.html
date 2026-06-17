@@ -1,7 +1,7 @@
 <div class="form-page">
   <h1 class="form-page__title">{{ isEditMode ? 'Edit Issue' : 'New Issue' }}</h1>
 
-  @if (isLoading) {
+  @if (isFetching()) {
     <app-loading-spinner />
   }
 
@@ -45,14 +45,10 @@
       </select>
     </div>
 
-    @if (error) {
-      <app-error-message [message]="error" />
-    }
-
     <div class="form__actions">
       <button type="button" class="btn btn--secondary" routerLink="/issues">Cancel</button>
-      <button type="submit" class="btn btn--primary" [disabled]="form.invalid || isLoading">
-        {{ isEditMode ? 'Update Issue' : 'Create Issue' }}
+      <button type="submit" class="btn btn--primary" [disabled]="form.invalid || isSubmitting()">
+        @if (isSubmitting()) { Saving... } @else { {{ isEditMode ? 'Update Issue' : 'Create Issue' }} }
       </button>
     </div>
   </form>

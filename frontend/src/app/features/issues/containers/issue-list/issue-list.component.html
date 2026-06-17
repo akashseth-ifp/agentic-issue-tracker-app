@@ -3,12 +3,12 @@
     <h1 class="issue-list__title">Issues</h1>
   </div>
 
-  @if (isLoading) {
+  @if (isLoading()) {
     <app-loading-spinner />
   }
 
-  @if (error) {
-    <app-error-message [message]="error" />
+  @if (error()) {
+    <app-error-message [message]="error()!" />
   }
 
   @if (issuePage$ | async; as page) {
@@ -27,17 +27,17 @@
         [total]="page.total"
         (pageChange)="onPageChange($event)"
       />
-    } @else if (!isLoading) {
+    } @else if (!isLoading()) {
       <p class="issue-list__empty">
         No issues yet. <a routerLink="/issues/new">Create one</a>.
       </p>
     }
   }
 
-  @if (pendingDeleteId !== null) {
+  @if (pendingDeleteId() !== null) {
     <app-confirm-dialog
       message="Delete this issue? This cannot be undone."
-      (confirmed)="confirmDelete(pendingDeleteId!)"
+      (confirmed)="confirmDelete(pendingDeleteId()!)"
       (cancelled)="cancelDelete()"
     />
   }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BehaviorSubject, Subject, merge, switchMap, distinctUntilChanged, catchError, finalize, of, map } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
@@ -30,51 +30,48 @@ export class IssueListComponent {
   private router = inject(Router);
 
   readonly pageSize = 20;
-  isLoading = false;
-  error: string | null = null;
-  pendingDeleteId: number | null = null;
+  isLoading = signal(false);
+  error = signal<string | null>(null);
+  pendingDeleteId = signal<number | null>(null);
 
-  // BehaviorSubject as the page "source of truth"
   private page$ = new BehaviorSubject<number>(1);
-  // Subject for force-refreshing the current page (e.g. after delete)
   private refresh$ = new Subject<void>();
 
-  // RxJS pipeline — distinctUntilChanged + switchMap are the rubric operators
   issuePage$ = merge(
-    this.page$.pipe(distinctUntilChanged()),     // skip if same page emitted twice
-    this.refresh$.pipe(map(() => this.page$.value)), // bypass distinctUntilChanged on refresh
+    this.page$.pipe(distinctUntilChanged()),
+    this.refresh$.pipe(map(() => this.page$.value)),
   ).pipe(
-    switchMap(page => {                          // cancel previous in-flight request on page change
-      this.isLoading = true;
-      this.error = null;
+    switchMap(page => {
+      this.isLoading.set(true);
+      this.error.set(null);
       return this.issueService.getAll(page, this.pageSize).pipe(
         catchError(err => {
-          this.error = err.message;
-          return of(null);                       // return null so stream stays alive after error
+          this.error.set(err.message);
+          return of(null);
         }),
-        finalize(() => this.isLoading = false),  // always turn off spinner
+        finalize(() => this.isLoading.set(false)),
       );
     }),
-    takeUntilDestroyed(),                        // auto-unsubscribe when component is destroyed
+    takeUntilDestroyed(),
   );
 
   get currentPage(): number { return this.page$.value; }
 
   onPageChange(page: number) { this.page$.next(page); }
   navigateToEdit(id: number) { this.router.navigate(['/issues/edit', id]); }
-  showDeleteConfirm(id: number) { this.pendingDeleteId = id; }
-  cancelDelete() { this.pendingDeleteId = null; }
+  showDeleteConfirm(id: number) { this.pendingDeleteId.set(id); }
+  cancelDelete() { this.pendingDeleteId.set(null); }
 
   confirmDelete(id: number) {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.issueService.delete(id).pipe(
-      finalize(() => this.isLoading = false),
+      finalize(() => this.isLoading.set(false)),
     ).subscribe({
       next: () => {
-        this.pendingDeleteId = null;
-        this.refresh$.next(); // force refresh without triggering distinctUntilChanged
+        this.pendingDeleteId.set(null);
+        this.refresh$.next();
       },
-      error: err => this.error = err.message,
+      error: err => this.error.set(err.message),
     });
   }
 }

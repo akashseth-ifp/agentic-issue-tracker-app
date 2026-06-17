@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,12 +6,11 @@ import { finalize } from 'rxjs';
 import { IssueService } from '../../../../core/services/issue.service';
 import { IssueStatus, UpdateIssueDto, CreateIssueDto } from '../../../../core/models/issue.model';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
-import { ErrorMessageComponent } from '../../../../shared/components/error-message/error-message.component';
 
 @Component({
   selector: 'app-issue-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, LoadingSpinnerComponent, ErrorMessageComponent],
+  imports: [ReactiveFormsModule, RouterModule, LoadingSpinnerComponent],
   templateUrl: './issue-form.component.html',
   styleUrl: './issue-form.component.scss',
 })
@@ -25,8 +24,10 @@ export class IssueFormComponent implements OnInit {
   readonly statusOptions = Object.values(IssueStatus);
   isEditMode = false;
   issueId: number | null = null;
-  isLoading = false;
-  error: string | null = null;
+
+  isFetching = signal(false);
+  isSubmitting = signal(false);
+  error = signal<string | null>(null);
 
   form = this.fb.group({
     title: ['', [Validators.required, Validators.maxLength(255)]],
@@ -40,21 +41,21 @@ export class IssueFormComponent implements OnInit {
     this.isEditMode = !!this.issueId;
 
     if (this.isEditMode) {
-      this.isLoading = true;
+      this.isFetching.set(true);
       this.issueService.getById(this.issueId!).pipe(
         takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isLoading = false),
+        finalize(() => this.isFetching.set(false)),
       ).subscribe({
         next: issue => this.form.patchValue(issue),
-        error: err => this.error = err.message,
+        error: err => this.error.set(err.message),
       });
     }
   }
 
   submit(): void {
     if (this.form.invalid) return;
-    this.isLoading = true;
-    this.error = null;
+    this.isSubmitting.set(true);
+    this.error.set(null);
 
     const data = this.form.getRawValue();
     const request$ = this.isEditMode
@@ -62,10 +63,10 @@ export class IssueFormComponent implements OnInit {
       : this.issueService.create(data as CreateIssueDto);
 
     request$.pipe(
-      finalize(() => this.isLoading = false),
+      finalize(() => this.isSubmitting.set(false)),
     ).subscribe({
       next: () => this.router.navigate(['/issues']),
-      error: err => this.error = err.message,
+      error: err => this.error.set(err.message),
     });
   }
 

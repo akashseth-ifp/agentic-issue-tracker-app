@@ -1,0 +1,6 @@
+@if (visible() && message()) {
+  <div class="toast">
+    <span class="toast__message">{{ message() }}</span>
+    <button class="toast__close" (click)="dismiss()">✕</button>
+  </div>
+}
