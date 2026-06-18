@@ -22,7 +22,17 @@ export class AssistantPanelComponent {
 
   togglePanel(): void {
     this.isExpanded.update(v => !v);
-    if (!this.isExpanded()) this.pendingCursor.set(null);
+    if (!this.isExpanded()) {
+      this.pendingCursor.set(null);
+      this.response.set(null);
+      this.error.set(null);
+    }
+  }
+
+  closeOnBackdrop(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('assistant-modal__backdrop')) {
+      this.togglePanel();
+    }
   }
 
   submit(): void {

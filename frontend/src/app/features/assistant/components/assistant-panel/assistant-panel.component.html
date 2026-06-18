@@ -1,35 +1,48 @@
-<div class="assistant-panel">
-  <button class="assistant-panel__header" (click)="togglePanel()" type="button">
-    <span>AI Assistant</span>
-    <span class="assistant-panel__chevron" [class.assistant-panel__chevron--open]="isExpanded()">▾</span>
-  </button>
+<!-- Floating trigger button -->
+<button class="assistant-fab" (click)="togglePanel()" type="button" title="AI Assistant">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <span>AI Assistant</span>
+</button>
 
-  @if (isExpanded()) {
-    <div class="assistant-panel__body">
-      <textarea
-        class="assistant-panel__input"
-        placeholder="Try: 'Show open issues', 'next page', 'Create a bug for the login page'"
-        [value]="instruction()"
-        (input)="instruction.set($any($event.target).value)"
-        (keydown.enter)="$event.preventDefault(); submit()"
-        rows="3"
-      ></textarea>
-
-      <div class="assistant-panel__actions">
-        <button class="btn btn--primary" (click)="submit()" [disabled]="isLoading()" type="button">
-          @if (isLoading()) { Running... } @else { Run }
-        </button>
-        @if (pendingCursor()) {
-          <span class="assistant-panel__more-hint">More results available — ask "next page"</span>
-        }
+<!-- Modal -->
+@if (isExpanded()) {
+  <div class="assistant-modal__backdrop" (click)="closeOnBackdrop($event)">
+    <div class="assistant-modal">
+      <div class="assistant-modal__header">
+        <span class="assistant-modal__title">AI Assistant</span>
+        <button class="assistant-modal__close" (click)="togglePanel()" type="button" title="Close">✕</button>
       </div>
 
-      @if (response()) {
-        <div class="assistant-panel__response">{{ response() }}</div>
-      }
-      @if (error()) {
-        <div class="assistant-panel__error">{{ error() }}</div>
-      }
+      <div class="assistant-modal__body">
+        <textarea
+          class="assistant-modal__input"
+          placeholder="Try: 'Show open issues', 'Create a bug for login page', 'Close all in-progress issues'"
+          [value]="instruction()"
+          (input)="instruction.set($any($event.target).value)"
+          (keydown.enter)="$event.preventDefault(); submit()"
+          rows="3"
+          autofocus
+        ></textarea>
+
+        <div class="assistant-modal__actions">
+          <button class="btn btn--primary" (click)="submit()" [disabled]="isLoading()" type="button">
+            @if (isLoading()) { Running... } @else { Run }
+          </button>
+          @if (pendingCursor()) {
+            <span class="assistant-modal__more-hint">More results available — ask "next page"</span>
+          }
+        </div>
+
+        @if (response()) {
+          <div class="assistant-modal__response">{{ response() }}</div>
+        }
+        @if (error()) {
+          <div class="assistant-modal__error">{{ error() }}</div>
+        }
+      </div>
     </div>
-  }
-</div>
+  </div>
+}
