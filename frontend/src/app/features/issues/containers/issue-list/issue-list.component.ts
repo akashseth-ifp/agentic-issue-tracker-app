@@ -9,6 +9,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorMessageComponent } from '../../../../shared/components/error-message/error-message.component';
+import { AssistantPanelComponent } from '../../../../features/assistant/components/assistant-panel/assistant-panel.component';
 
 @Component({
   selector: 'app-issue-list',
@@ -21,6 +22,7 @@ import { ErrorMessageComponent } from '../../../../shared/components/error-messa
     PaginationComponent,
     LoadingSpinnerComponent,
     ErrorMessageComponent,
+    AssistantPanelComponent,
   ],
   templateUrl: './issue-list.component.html',
   styleUrl: './issue-list.component.scss',
@@ -58,6 +60,7 @@ export class IssueListComponent {
   get currentPage(): number { return this.page$.value; }
 
   onPageChange(page: number) { this.page$.next(page); }
+  onIssuesChanged(): void { this.refresh$.next(); }
   navigateToEdit(id: number) { this.router.navigate(['/issues/edit', id]); }
   showDeleteConfirm(id: number) { this.pendingDeleteId.set(id); }
   cancelDelete() { this.pendingDeleteId.set(null); }
